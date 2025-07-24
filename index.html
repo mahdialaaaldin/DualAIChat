@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dual AI Chatbot</title>
+    <link rel="icon" href="assets/icon.png" type="image/png">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="logo">Dual AI Chat</div>
+
+        <div class="header">
+            <h1>Person1 & Person2 Conversation</h1>
+            <p>Watch two advanced AI systems engage in a conversation on topics of your choosing. Customize their personalities and conversation topics below.</p>
+        </div>
+
+        <div class="control-panel">
+            <div class="control-section">
+                <h2>AI 1: Person1</h2>
+                <div class="control-group">
+                    <label for="ai1-name">Display Name</label>
+                    <input type="text" class="control-input" id="ai1-name" value="Person1">
+                </div>
+                <div class="control-group">
+                    <label>Persona</label>
+                    <div class="persona-toggle">
+                        <button class="toggle-btn active" id="ai1-preset-btn">Preset</button>
+                        <button class="toggle-btn" id="ai1-custom-btn">Custom</button>
+                    </div>
+                    <div id="ai1-preset-container">
+                        <select class="control-input" id="ai1-persona">
+                            <option value="optimistic">Optimistic Tech Enthusiast</option>
+                            <option value="skeptical">Skeptical Analyst</option>
+                            <option value="creative">Creative Visionary</option>
+                            <option value="logical">Logical Problem Solver</option>
+                        </select>
+                    </div>
+                    <div id="ai1-custom-container" style="display: none;">
+                        <textarea class="control-input" id="ai1-custom-persona" placeholder="Describe the custom persona for AI 1..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h2>AI 2: Person2</h2>
+                <div class="control-group">
+                    <label for="ai2-name">Display Name</label>
+                    <input type="text" class="control-input" id="ai2-name" value="Person2">
+                </div>
+                <div class="control-group">
+                    <label>Persona</label>
+                    <div class="persona-toggle">
+                        <button class="toggle-btn active" id="ai2-preset-btn">Preset</button>
+                        <button class="toggle-btn" id="ai2-custom-btn">Custom</button>
+                    </div>
+                    <div id="ai2-preset-container">
+                        <select class="control-input" id="ai2-persona">
+                            <option value="philosophical">Philosophical Thinker</option>
+                            <option value="practical">Practical Realist</option>
+                            <option value="curious">Inquisitive Explorer</option>
+                            <option value="humorous">Witty Humorist</option>
+                        </select>
+                    </div>
+                    <div id="ai2-custom-container" style="display: none;">
+                        <textarea class="control-input" id="ai2-custom-persona" placeholder="Describe the custom persona for AI 2..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h2>Conversation Settings</h2>
+                <div class="control-group">
+                    <label for="topic">Conversation Topic</label>
+                    <input type="text" class="control-input" id="topic" value="The future of artificial intelligence">
+                </div>
+                <div class="control-group">
+                    <label for="max-turns">Max Conversation Turns</label>
+                    <input type="number" class="control-input" id="max-turns" min="2" max="20" value="10">
+                </div>
+                <div class="control-group">
+                    <label for="char-limit">Character Limit per Message</label>
+                    <input type="number" class="control-input" id="char-limit" min="500" max="3000" value="1500">
+                    <div class="char-limit-info">Recommended: 1500 characters to avoid cutoffs</div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn" id="startBtn">Start Conversation</button>
+                    <button class="btn btn-stop" id="stopBtn">Stop</button>
+                    <button class="btn btn-clear" id="clearBtn">Clear</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="conversation-container">
+            <div class="conversation-header">
+                <div class="conversation-title">AI Conversation</div>
+                <div class="conversation-controls">
+                    <button class="btn" id="addTurnBtn">+ Add Turn</button>
+                </div>
+            </div>
+            <div class="conversation-messages" id="chatMessages">
+                <div class="chat-message ai1">
+                    <div class="message-header">
+                        <span class="message-icon">G</span>
+                        Person1
+                        <span class="message-char-count">74 chars</span>
+                    </div>
+                    Hello Person2! I'm excited to have this conversation with you. How should we begin?
+                </div>
+                <div class="chat-message ai2">
+                    <div class="message-header">
+                        <span class="message-icon">C</span>
+                        Person2
+                        <span class="message-char-count">118 chars</span>
+                    </div>
+                    Greetings Person1! I'm looking forward to our discussion. Shall we explore the topic of artificial intelligence's future?
+                </div>
+            </div>
+            <div class="status-bar">
+                <div class="status-indicator">
+                    <span class="status-dot inactive" id="ai1Status"></span>
+                    <span id="ai1StatusText">Person1: Inactive</span>
+                </div>
+                <div class="status-indicator">
+                    <span class="status-dot inactive" id="ai2Status"></span>
+                    <span id="ai2StatusText">Person2: Inactive</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
