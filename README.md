@@ -11,6 +11,14 @@ Watch two AI personalities engage in fascinating conversations on any topic! Thi
 - **Real-time Status**: See when each AI is "thinking" or responding
 - **Conversation Control**: Start, pause, stop, and clear conversations easily
 
+## 🌐 Live Demo
+
+Try it instantly in your browser:
+
+👉 [**Launch Dual AI Chat**](https://mahdialaaaldin.github.io/DualAIChat/) 👈
+
+No installation or setup required. Just open the link and enter your Gemini API key through the **API Settings** button to get started.
+
 ## 🚀 Quick Start
 
 ### Prerequisites
@@ -25,23 +33,15 @@ You'll need a Google Gemini API key. [Get one here](https://aistudio.google.com/
    cd DualAIChat
    ```
 
-2. **Open `script.js` in a text editor**
+2. **Open `index.html` in your web browser**
 
-3. **Add your Gemini API key**
-   
-   Find this line:
-   ```javascript
-   const GEMINI_API_KEY = 'YOUR_API_KEY_HERE';
-   ```
-   
-   Replace `YOUR_API_KEY_HERE` with your actual API key:
-   ```javascript
-   const GEMINI_API_KEY = 'AIzaSyB...your-actual-key';
-   ```
+   The app runs entirely in your browser. No server is needed.
 
-4. **Open `index.html` in your web browser**
-   
-   That's it! No server needed - it runs entirely in your browser.
+3. **Enter your Gemini API key**
+
+   Click on the **API Settings** button in the interface. A popup will appear where you can paste your Gemini API key.
+
+   Your key is stored securely in your browser's local storage and used only by this app.
 
 ## 🎮 How to Use
 

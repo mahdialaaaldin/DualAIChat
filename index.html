@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dual AI Chatbot</title>
+    <title>Dual AI Chat - Watch AI Conversations</title>
     <link rel="icon" href="assets/icon.png" type="image/png">
+    <meta name="description" content="Watch two AI personalities engage in fascinating conversations on any topic with customizable personas.">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -12,13 +13,13 @@
         <div class="logo">Dual AI Chat</div>
 
         <div class="header">
-            <h1>Person1 & Person2 Conversation</h1>
+            <h1>AI Conversation Simulator</h1>
             <p>Watch two advanced AI systems engage in a conversation on topics of your choosing. Customize their personalities and conversation topics below.</p>
         </div>
 
         <div class="control-panel">
             <div class="control-section">
-                <h2>AI 1: Person1</h2>
+                <h2>AI 1: Person 1</h2>
                 <div class="control-group">
                     <label for="ai1-name">Display Name</label>
                     <input type="text" class="control-input" id="ai1-name" value="Person1">
@@ -44,7 +45,7 @@
             </div>
 
             <div class="control-section">
-                <h2>AI 2: Person2</h2>
+                <h2>AI 2: Person 2</h2>
                 <div class="control-group">
                     <label for="ai2-name">Display Name</label>
                     <input type="text" class="control-input" id="ai2-name" value="Person2">
@@ -84,10 +85,22 @@
                     <input type="number" class="control-input" id="char-limit" min="500" max="3000" value="1500">
                     <div class="char-limit-info">Recommended: 1500 characters to avoid cutoffs</div>
                 </div>
-                <div class="btn-group">
-                    <button class="btn" id="startBtn">Start Conversation</button>
-                    <button class="btn btn-stop" id="stopBtn">Stop</button>
-                    <button class="btn btn-clear" id="clearBtn">Clear</button>
+                <div class="control-buttons">
+                    <div class="btn-row">
+                        <button class="btn btn-primary" id="startBtn">
+                            <span>Start Conversation</span>
+                        </button>
+                        <button class="btn btn-stop" id="stopBtn">
+                            <span>Stop</span>
+                        </button>
+                        <button class="btn btn-clear" id="clearBtn">
+                            <span>Clear</span>
+                        </button>
+                    </div>
+                    <button class="btn btn-settings" id="settingsBtn">
+                        <span class="btn-icon">⚙️</span>
+                        <span>API Settings</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -96,13 +109,16 @@
             <div class="conversation-header">
                 <div class="conversation-title">AI Conversation</div>
                 <div class="conversation-controls">
-                    <button class="btn" id="addTurnBtn">+ Add Turn</button>
+                    <button class="btn btn-add-turn" id="addTurnBtn">
+                        <span class="btn-icon">➕</span>
+                        <span>Add Turn</span>
+                    </button>
                 </div>
             </div>
             <div class="conversation-messages" id="chatMessages">
                 <div class="chat-message ai1">
                     <div class="message-header">
-                        <span class="message-icon">G</span>
+                        <span class="message-icon">1</span>
                         Person1
                         <span class="message-char-count">74 chars</span>
                     </div>
@@ -110,9 +126,9 @@
                 </div>
                 <div class="chat-message ai2">
                     <div class="message-header">
-                        <span class="message-icon">C</span>
+                        <span class="message-icon">2</span>
                         Person2
-                        <span class="message-char-count">118 chars</span>
+                        <span class="message-char-count">125 chars</span>
                     </div>
                     Greetings Person1! I'm looking forward to our discussion. Shall we explore the topic of artificial intelligence's future?
                 </div>
@@ -131,6 +147,5 @@
     </div>
 
     <script src="script.js"></script>
-
 </body>
 </html>

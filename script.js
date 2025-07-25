@@ -1,6 +1,148 @@
 // Gemini AI Configuration
-const GEMINI_API_KEY = 'YOUR_API_KEY_HERE';
+let GEMINI_API_KEY = '';
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent`;
+
+// API Key Management
+function initializeAPIKey() {
+    GEMINI_API_KEY = localStorage.getItem('gemini_api_key') || '';
+
+    if (!GEMINI_API_KEY) {
+        showAPIKeyModal();
+        return false;
+    }
+    return true;
+}
+
+// Show API Key Modal
+function showAPIKeyModal() {
+    const modalHTML = `
+        <div id="apiKeyModal" style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        ">
+            <div style="
+                background: white;
+                padding: 30px;
+                border-radius: 15px;
+                max-width: 500px;
+                width: 90%;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            ">
+                <h2 style="margin-top: 0; color: #4a5c2f;">Welcome to Dual AI Chat! 🤖</h2>
+                <p>To start conversations, you'll need a Google Gemini API key.</p>
+                <p style="margin-bottom: 20px;">
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: #4a5c2f;">
+                        Get your free API key here →
+                    </a>
+                </p>
+                <input type="password" id="apiKeyInput" placeholder="Enter your Gemini API key" style="
+                    width: 100%;
+                    padding: 12px;
+                    border: 1px solid #ddd;
+                    border-radius: 8px;
+                    font-size: 16px;
+                    margin-bottom: 10px;
+                    box-sizing: border-box;
+                ">
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button onclick="saveAPIKey()" style="
+                        flex: 1;
+                        padding: 12px;
+                        background: linear-gradient(45deg, #4a5c2f, #5f7a3d);
+                        color: white;
+                        border: none;
+                        border-radius: 8px;
+                        font-weight: bold;
+                        cursor: pointer;
+                        font-size: 16px;
+                    ">Save & Continue</button>
+                </div>
+                <p style="margin-top: 15px; font-size: 12px; color: #666;">
+                    Your API key is stored locally in your browser and never sent to our servers.
+                </p>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    document.getElementById('apiKeyInput').focus();
+
+    // Allow Enter key to save
+    document.getElementById('apiKeyInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') saveAPIKey();
+    });
+}
+
+// Save API Key
+function saveAPIKey() {
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    const apiKey = apiKeyInput.value.trim();
+
+    if (!apiKey) {
+        alert('Please enter a valid API key');
+        return;
+    }
+
+    // Basic validation - Gemini keys usually start with "AIza"
+    if (!apiKey.startsWith('AIza') || apiKey.length < 30) {
+        if (!confirm('This doesn\'t look like a valid Gemini API key. Save anyway?')) {
+            return;
+        }
+    }
+
+    GEMINI_API_KEY = apiKey;
+    localStorage.setItem('gemini_api_key', apiKey);
+
+    // Remove modal
+    document.getElementById('apiKeyModal').remove();
+
+    // Show success message
+    showToast('API key saved successfully! You can now start conversations.');
+}
+
+// Show toast notification
+function showToast(message, duration = 3000) {
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #4a5c2f;
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        z-index: 10001;
+        animation: slideIn 0.3s ease;
+    `;
+    toast.textContent = message;
+
+    // Add CSS animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+    `;
+    document.head.appendChild(style);
+
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease';
+        toast.style.animationFillMode = 'forwards';
+        setTimeout(() => toast.remove(), 300);
+    }, duration);
+}
 
 // Conversation state
 let conversationHistory = [];
@@ -13,36 +155,13 @@ let ai1UseCustom = false;
 let ai2UseCustom = false;
 let characterLimit = 1500;
 
-// DOM Elements
-const chatMessages = document.getElementById('chatMessages');
-const startBtn = document.getElementById('startBtn');
-const stopBtn = document.getElementById('stopBtn');
-const clearBtn = document.getElementById('clearBtn');
-const addTurnBtn = document.getElementById('addTurnBtn');
-const ai1Status = document.getElementById('ai1Status');
-const ai1StatusText = document.getElementById('ai1StatusText');
-const ai2Status = document.getElementById('ai2Status');
-const ai2StatusText = document.getElementById('ai2StatusText');
-const maxTurnsInput = document.getElementById('max-turns');
-const topicInput = document.getElementById('topic');
-const ai1NameInput = document.getElementById('ai1-name');
-const ai2NameInput = document.getElementById('ai2-name');
-const ai1PersonaSelect = document.getElementById('ai1-persona');
-const ai2PersonaSelect = document.getElementById('ai2-persona');
-const charLimitInput = document.getElementById('char-limit');
-
-// Persona toggle elements
-const ai1PresetBtn = document.getElementById('ai1-preset-btn');
-const ai1CustomBtn = document.getElementById('ai1-custom-btn');
-const ai1PresetContainer = document.getElementById('ai1-preset-container');
-const ai1CustomContainer = document.getElementById('ai1-custom-container');
-const ai1CustomPersona = document.getElementById('ai1-custom-persona');
-
-const ai2PresetBtn = document.getElementById('ai2-preset-btn');
-const ai2CustomBtn = document.getElementById('ai2-custom-btn');
-const ai2PresetContainer = document.getElementById('ai2-preset-container');
-const ai2CustomContainer = document.getElementById('ai2-custom-container');
-const ai2CustomPersona = document.getElementById('ai2-custom-persona');
+// DOM Elements (initialize after DOM loads)
+let chatMessages, startBtn, stopBtn, clearBtn, settingsBtn, addTurnBtn;
+let ai1Status, ai1StatusText, ai2Status, ai2StatusText;
+let maxTurnsInput, topicInput, ai1NameInput, ai2NameInput;
+let ai1PersonaSelect, ai2PersonaSelect, charLimitInput;
+let ai1PresetBtn, ai1CustomBtn, ai1PresetContainer, ai1CustomContainer, ai1CustomPersona;
+let ai2PresetBtn, ai2CustomBtn, ai2PresetContainer, ai2CustomContainer, ai2CustomPersona;
 
 // Persona configurations
 const personas = {
@@ -79,6 +198,40 @@ const personas = {
         context: "You are a witty humorist. You approach conversations with lightheartedness and clever wit. You enjoy wordplay and finding humor in situations without being disrespectful. Your responses are engaging and entertaining."
     }
 };
+
+// Initialize DOM elements
+function initializeDOMElements() {
+    chatMessages = document.getElementById('chatMessages');
+    startBtn = document.getElementById('startBtn');
+    stopBtn = document.getElementById('stopBtn');
+    clearBtn = document.getElementById('clearBtn');
+    settingsBtn = document.getElementById('settingsBtn');
+    addTurnBtn = document.getElementById('addTurnBtn');
+    ai1Status = document.getElementById('ai1Status');
+    ai1StatusText = document.getElementById('ai1StatusText');
+    ai2Status = document.getElementById('ai2Status');
+    ai2StatusText = document.getElementById('ai2StatusText');
+    maxTurnsInput = document.getElementById('max-turns');
+    topicInput = document.getElementById('topic');
+    ai1NameInput = document.getElementById('ai1-name');
+    ai2NameInput = document.getElementById('ai2-name');
+    ai1PersonaSelect = document.getElementById('ai1-persona');
+    ai2PersonaSelect = document.getElementById('ai2-persona');
+    charLimitInput = document.getElementById('char-limit');
+
+    // Persona toggle elements
+    ai1PresetBtn = document.getElementById('ai1-preset-btn');
+    ai1CustomBtn = document.getElementById('ai1-custom-btn');
+    ai1PresetContainer = document.getElementById('ai1-preset-container');
+    ai1CustomContainer = document.getElementById('ai1-custom-container');
+    ai1CustomPersona = document.getElementById('ai1-custom-persona');
+
+    ai2PresetBtn = document.getElementById('ai2-preset-btn');
+    ai2CustomBtn = document.getElementById('ai2-custom-btn');
+    ai2PresetContainer = document.getElementById('ai2-preset-container');
+    ai2CustomContainer = document.getElementById('ai2-custom-container');
+    ai2CustomPersona = document.getElementById('ai2-custom-persona');
+}
 
 // Toggle functions for persona selection
 function setupPersonaToggles() {
@@ -161,14 +314,14 @@ function initConversation() {
         {
             role: "system",
             content: `You are ${ai1Name}, an AI assistant with a ${getPersonaName(true)} personality. 
-			You are having a conversation with ${ai2Name}, who has a ${getPersonaName(false)} personality.
-			You're discussing: ${topic}. ${getPersonaContext(true)}`
+            You are having a conversation with ${ai2Name}, who has a ${getPersonaName(false)} personality.
+            You're discussing: ${topic}. ${getPersonaContext(true)}`
         },
         {
             role: "system",
             content: `You are ${ai2Name}, an AI assistant with a ${getPersonaName(false)} personality. 
-			You are having a conversation with ${ai1Name}, who has a ${getPersonaName(true)} personality.
-			You're discussing: ${topic}. ${getPersonaContext(false)}`
+            You are having a conversation with ${ai1Name}, who has a ${getPersonaName(true)} personality.
+            You're discussing: ${topic}. ${getPersonaContext(false)}`
         }
     ];
 
@@ -178,23 +331,23 @@ function initConversation() {
 
     // Clear chat messages except the initial two
     chatMessages.innerHTML = `
-		<div class="chat-message ai1">
-			<div class="message-header">
-				<span class="message-icon">G</span>
-				${ai1Name}
-				<span class="message-char-count">74 chars</span>
-			</div>
-			Hello ${ai2Name}! I'm excited to have this conversation with you. How should we begin?
-		</div>
-		<div class="chat-message ai2">
-			<div class="message-header">
-				<span class="message-icon">C</span>
-				${ai2Name}
-				<span class="message-char-count">118 chars</span>
-			</div>
-			Greetings ${ai1Name}! I'm looking forward to our discussion. Shall we explore the topic of ${topic}?
-		</div>
-	`;
+        <div class="chat-message ai1">
+            <div class="message-header">
+                <span class="message-icon">1</span>
+                ${ai1Name}
+                <span class="message-char-count">74 chars</span>
+            </div>
+            Hello ${ai2Name}! I'm excited to have this conversation with you. How should we begin?
+        </div>
+        <div class="chat-message ai2">
+            <div class="message-header">
+                <span class="message-icon">2</span>
+                ${ai2Name}
+                <span class="message-char-count">118 chars</span>
+            </div>
+            Greetings ${ai1Name}! I'm looking forward to our discussion. Shall we explore the topic of ${topic}?
+        </div>
+    `;
 }
 
 // Add a message to the chat
@@ -206,15 +359,16 @@ function addChatMessage(content, sender, isTyping = false) {
     messageDiv.className = `chat-message ${sender}`;
 
     if (isTyping) {
+        messageDiv.classList.add('typing-indicator');
         messageDiv.innerHTML = `
-			<div class="message-header">
-				<span class="message-icon">${sender === 'ai1' ? 'G' : 'C'}</span>
-				${sender === 'ai1' ? ai1Name : ai2Name}
-			</div>
-			<div class="typing-dots">
-				<span></span><span></span><span></span>
-			</div>
-		`;
+            <div class="message-header">
+                <span class="message-icon">${sender === 'ai1' ? '1' : '2'}</span>
+                ${sender === 'ai1' ? ai1Name : ai2Name}
+            </div>
+            <div class="typing-dots">
+                <span></span><span></span><span></span>
+            </div>
+        `;
     } else {
         const charCount = content.length;
         const formattedContent = content
@@ -224,13 +378,13 @@ function addChatMessage(content, sender, isTyping = false) {
             .replace(/\n/g, '<br>');
 
         messageDiv.innerHTML = `
-			<div class="message-header">
-				<span class="message-icon">${sender === 'ai1' ? 'G' : 'C'}</span>
-				${sender === 'ai1' ? ai1Name : ai2Name}
-				<span class="message-char-count">${charCount} chars</span>
-			</div>
-			${formattedContent}
-		`;
+            <div class="message-header">
+                <span class="message-icon">${sender === 'ai1' ? '1' : '2'}</span>
+                ${sender === 'ai1' ? ai1Name : ai2Name}
+                <span class="message-char-count">${charCount} chars</span>
+            </div>
+            ${formattedContent}
+        `;
     }
 
     chatMessages.appendChild(messageDiv);
@@ -267,18 +421,17 @@ async function getAIResponse(sender, prompt) {
     const otherAI = sender === 'ai1' ? ai2Name : ai1Name;
 
     // Calculate approximate token count based on character limit
-    // Rough estimation: 1 token ≈ 4 characters
     const maxTokens = Math.floor(characterLimit / 4);
 
     const context = `You are ${sender === 'ai1' ? ai1Name : ai2Name}. 
-		${currentPersonaContext}
-		
-		IMPORTANT: Keep your response under ${characterLimit} characters to ensure it's not cut off.
-		
-		Current conversation:
-		${conversationHistory.slice(2).map(msg => `${msg.sender === 'ai1' ? ai1Name : ai2Name}: ${msg.content}`).join('\n')}
-		
-		${sender === 'ai1' ? ai1Name : ai2Name}:`;
+        ${currentPersonaContext}
+        
+        IMPORTANT: Keep your response under ${characterLimit} characters to ensure it's not cut off.
+        
+        Current conversation:
+        ${conversationHistory.slice(2).map(msg => `${msg.sender === 'ai1' ? ai1Name : ai2Name}: ${msg.content}`).join('\n')}
+        
+        ${sender === 'ai1' ? ai1Name : ai2Name}:`;
 
     const body = {
         contents: [{ parts: [{ text: context + prompt }] }],
@@ -298,15 +451,19 @@ async function getAIResponse(sender, prompt) {
             body: JSON.stringify(body)
         });
 
-        if (!res.ok) throw new Error(`API request failed: ${res.status}`);
+        if (!res.ok) {
+            if (res.status === 401 || res.status === 403) {
+                throw new Error('Invalid API key. Please check your settings.');
+            }
+            throw new Error(`API request failed: ${res.status}`);
+        }
 
         const data = await res.json();
         let response = data.candidates[0].content.parts[0].text;
 
         // Enforce character limit on the response
         if (response.length > characterLimit) {
-            // Find a good breaking point (end of sentence)
-            const cutoff = characterLimit - 50; // Leave some buffer
+            const cutoff = characterLimit - 50;
             const lastPeriod = response.lastIndexOf('.', cutoff);
             const lastQuestion = response.lastIndexOf('?', cutoff);
             const lastExclamation = response.lastIndexOf('!', cutoff);
@@ -323,6 +480,10 @@ async function getAIResponse(sender, prompt) {
         return response;
     } catch (error) {
         console.error('Gemini API Error:', error);
+        if (error.message.includes('Invalid API key')) {
+            showToast('Invalid API key. Please update it in settings.', 5000);
+            showAPIKeyModal();
+        }
         return "I encountered an error processing your request. Could you try again?";
     }
 }
@@ -339,32 +500,25 @@ async function takeTurn() {
     const ai2Name = ai2NameInput.value || "Person2";
     const topic = topicInput.value || "the future of artificial intelligence";
 
-    // Determine which AI's turn it is
     const sender = currentTurn % 2 === 0 ? 'ai1' : 'ai2';
-    const otherSender = sender === 'ai1' ? 'ai2' : 'ai1';
 
     // Show typing indicator
     addChatMessage("", sender, true);
 
-    // Create prompt based on conversation history
     let prompt = "";
     if (conversationHistory.length <= 2) {
-        // First message
         prompt = `Start a conversation about ${topic}. Begin with a greeting and an opening question or statement. Remember to keep your response concise and under ${characterLimit} characters.`;
     } else {
-        // Continue the conversation
         const lastMessage = conversationHistory[conversationHistory.length - 1].content;
         prompt = `Continue the conversation. The last message was: "${lastMessage}". Provide a thoughtful response that moves the discussion forward. Keep it under ${characterLimit} characters.`;
     }
 
-    // Get AI response
     const response = await getAIResponse(sender, prompt);
 
     // Remove typing indicator and add actual response
     chatMessages.removeChild(chatMessages.lastChild);
     addChatMessage(response, sender);
 
-    // Update conversation history
     conversationHistory.push({
         sender: sender,
         content: response
@@ -372,7 +526,6 @@ async function takeTurn() {
 
     currentTurn++;
 
-    // Continue conversation after a delay
     if (isConversationActive && currentTurn < maxTurns) {
         setTimeout(takeTurn, 1500);
     } else {
@@ -383,6 +536,10 @@ async function takeTurn() {
 
 // Start conversation
 function startConversation() {
+    if (!initializeAPIKey()) {
+        return;
+    }
+
     if (isConversationActive) {
         isConversationActive = false;
         startBtn.textContent = "Start Conversation";
@@ -391,7 +548,7 @@ function startConversation() {
 
     initConversation();
     isConversationActive = true;
-    startBtn.textContent = "Pause Conversation";
+    startBtn.textContent = "Stop Conversation";
     takeTurn();
 }
 
@@ -409,6 +566,10 @@ function clearConversation() {
 
 // Add one turn to the conversation
 function addOneTurn() {
+    if (!initializeAPIKey()) {
+        return;
+    }
+
     if (!isConversationActive) {
         startConversation();
     } else {
@@ -416,32 +577,143 @@ function addOneTurn() {
     }
 }
 
-// Event Listeners
-startBtn.addEventListener('click', startConversation);
-stopBtn.addEventListener('click', stopConversation);
-clearBtn.addEventListener('click', clearConversation);
-addTurnBtn.addEventListener('click', addOneTurn);
+// Settings dialog
+function showSettings() {
+    const currentKey = GEMINI_API_KEY;
+    const modalHTML = `
+        <div id="settingsModal" style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        ">
+            <div style="
+                background: white;
+                padding: 30px;
+                border-radius: 15px;
+                max-width: 500px;
+                width: 90%;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            ">
+                <h2 style="margin-top: 0; color: #4a5c2f;">API Settings</h2>
+                <p>Current key: ${currentKey ? currentKey.substring(0, 10) + '...' : 'Not set'}</p>
+                <input type="password" id="newApiKeyInput" placeholder="Enter new API key (leave blank to keep current)" style="
+                    width: 100%;
+                    padding: 12px;
+                    border: 1px solid #ddd;
+                    border-radius: 8px;
+                    font-size: 16px;
+                    margin-bottom: 10px;
+                    box-sizing: border-box;
+                ">
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button onclick="updateAPIKey()" style="
+                        flex: 1;
+                        padding: 12px;
+                        background: linear-gradient(45deg, #4a5c2f, #5f7a3d);
+                        color: white;
+                        border: none;
+                        border-radius: 8px;
+                        font-weight: bold;
+                        cursor: pointer;
+                        font-size: 16px;
+                    ">Update</button>
+                    <button onclick="document.getElementById('settingsModal').remove()" style="
+                        flex: 1;
+                        padding: 12px;
+                        background: linear-gradient(45deg, #7f8c8d, #95a5a6);
+                        color: white;
+                        border: none;
+                        border-radius: 8px;
+                        font-weight: bold;
+                        cursor: pointer;
+                        font-size: 16px;
+                    ">Cancel</button>
+                </div>
+                <button onclick="removeAPIKey()" style="
+                    width: 100%;
+                    padding: 12px;
+                    background: linear-gradient(45deg, #c0392b, #e74c3c);
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    font-weight: bold;
+                    cursor: pointer;
+                    font-size: 16px;
+                    margin-top: 10px;
+                ">Remove API Key</button>
+            </div>
+        </div>
+    `;
 
-// Update personas when selection changes
-ai1PersonaSelect.addEventListener('change', (e) => {
-    ai1Persona = e.target.value;
-    if (isConversationActive) {
-        initConversation();
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+// Update API Key
+function updateAPIKey() {
+    const newKeyInput = document.getElementById('newApiKeyInput');
+    const newKey = newKeyInput.value.trim();
+
+    if (newKey) {
+        GEMINI_API_KEY = newKey;
+        localStorage.setItem('gemini_api_key', newKey);
+        showToast('API key updated successfully!');
     }
-});
 
-ai2PersonaSelect.addEventListener('change', (e) => {
-    ai2Persona = e.target.value;
-    if (isConversationActive) {
-        initConversation();
+    document.getElementById('settingsModal').remove();
+}
+
+// Remove API Key
+function removeAPIKey() {
+    if (confirm('Are you sure you want to remove the API key?')) {
+        localStorage.removeItem('gemini_api_key');
+        GEMINI_API_KEY = '';
+        document.getElementById('settingsModal').remove();
+        showToast('API key removed.');
+        showAPIKeyModal();
     }
+}
+
+// Initialize app when DOM loads
+document.addEventListener('DOMContentLoaded', () => {
+    initializeDOMElements();
+    setupEventListeners();
+    setupPersonaToggles();
+    initializeAPIKey();
+    initConversation();
 });
 
-// Update character limit
-charLimitInput.addEventListener('change', (e) => {
-    characterLimit = parseInt(e.target.value) || 1500;
-});
+// Set up all event listeners
+function setupEventListeners() {
+    startBtn.addEventListener('click', startConversation);
+    stopBtn.addEventListener('click', stopConversation);
+    clearBtn.addEventListener('click', clearConversation);
+    addTurnBtn.addEventListener('click', addOneTurn);
+    settingsBtn.addEventListener('click', showSettings);
 
-// Initialize
-setupPersonaToggles();
-initConversation();
+    // Update personas when selection changes
+    ai1PersonaSelect.addEventListener('change', (e) => {
+        ai1Persona = e.target.value;
+        if (isConversationActive) {
+            initConversation();
+        }
+    });
+
+    ai2PersonaSelect.addEventListener('change', (e) => {
+        ai2Persona = e.target.value;
+        if (isConversationActive) {
+            initConversation();
+        }
+    });
+
+    // Update character limit
+    charLimitInput.addEventListener('change', (e) => {
+        characterLimit = parseInt(e.target.value) || 1500;
+    });
+}

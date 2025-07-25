@@ -116,29 +116,162 @@ textarea.control-input {
         border-color: var(--accent);
     }
 
+/* Updated Button Styles */
+.control-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.btn-row {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
 .btn {
-    padding: 12px 25px;
+    padding: 14px 24px;
     border: none;
-    border-radius: 8px;
-    background: linear-gradient(45deg, var(--ai1-color), #5f7a3d);
-    color: white;
-    font-weight: bold;
+    border-radius: 12px;
+    font-weight: 600;
     cursor: pointer;
     font-size: 16px;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
 }
 
     .btn:hover {
-        opacity: 0.9;
         transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
     }
 
-.btn-stop {
-    background: linear-gradient(45deg, #c0392b, #e74c3c);
+    .btn:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Ripple effect */
+    .btn::after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+        background-image: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+        background-repeat: no-repeat;
+        background-position: 50%;
+        transform: scale(0);
+        opacity: 0;
+        transition: transform 0.5s, opacity 0.5s;
+    }
+
+    .btn:active::after {
+        transform: scale(4);
+        opacity: 1;
+        transition: 0s;
+    }
+
+/* Primary button - Start */
+.btn-primary {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+    flex: 1.5;
 }
 
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
+    }
+
+    .btn-primary.active {
+        background: linear-gradient(135deg, #FFA726 0%, #FB8C00 100%);
+    }
+
+        .btn-primary.active:hover {
+            background: linear-gradient(135deg, #FB8C00 0%, #F57C00 100%);
+        }
+
+/* Stop button */
+.btn-stop {
+    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+    color: white;
+    flex: 1;
+}
+
+    .btn-stop:hover {
+        background: linear-gradient(135deg, #d32f2f 0%, #c62828 100%);
+    }
+
+/* Clear button */
 .btn-clear {
-    background: linear-gradient(45deg, #7f8c8d, #95a5a6);
+    background: linear-gradient(135deg, #607D8B 0%, #455A64 100%);
+    color: white;
+    flex: 1;
+}
+
+    .btn-clear:hover {
+        background: linear-gradient(135deg, #455A64 0%, #37474F 100%);
+    }
+
+/* Settings button */
+.btn-settings {
+    background: linear-gradient(135deg, #3F51B5 0%, #303F9F 100%);
+    color: white;
+    width: 100%;
+}
+
+    .btn-settings:hover {
+        background: linear-gradient(135deg, #303F9F 0%, #283593 100%);
+    }
+
+/* Add Turn button in header */
+.btn-add-turn {
+    padding: 10px 20px;
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+    .btn-add-turn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        border-color: rgba(255, 255, 255, 0.4);
+    }
+
+/* Loading state */
+.btn.loading {
+    color: transparent;
+    pointer-events: none;
+}
+
+    .btn.loading::before {
+        content: '';
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        margin: auto;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        border: 2px solid white;
+        border-radius: 50%;
+        border-top-color: transparent;
+        animation: btn-spin 0.8s linear infinite;
+    }
+
+@keyframes btn-spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .conversation-container {
@@ -373,6 +506,15 @@ textarea.control-input {
         max-width: 90%;
         font-size: 15px;
     }
+
+    .btn-row {
+        flex-direction: column;
+    }
+
+    .btn {
+        width: 100%;
+        flex: 1 !important;
+    }
 }
 
 .logo {
@@ -383,3 +525,22 @@ textarea.control-input {
     color: var(--accent);
     letter-spacing: 1px;
 }
+
+/* Scrollbar styling */
+.conversation-messages::-webkit-scrollbar {
+    width: 8px;
+}
+
+.conversation-messages::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.conversation-messages::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+    .conversation-messages::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
