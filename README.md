@@ -25,11 +25,11 @@ You'll need a Google Gemini API key. [Get one here](https://aistudio.google.com/
    cd DualAIChat
    ```
 
-2. **Open `index.html` in a text editor**
+2. **Open `script.js` in a text editor**
 
 3. **Add your Gemini API key**
    
-   Find this line (around line 477):
+   Find this line:
    ```javascript
    const GEMINI_API_KEY = 'YOUR_API_KEY_HERE';
    ```
