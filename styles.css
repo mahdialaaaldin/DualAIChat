@@ -279,10 +279,23 @@ textarea.control-input {
     border-radius: 15px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
     overflow: hidden;
-    height: 500px;
+    height: 700px; /* Increased from 500px */
     display: flex;
     flex-direction: column;
 }
+
+    /* Fullscreen mode */
+    .conversation-container.fullscreen {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 10000;
+        border-radius: 0;
+        box-shadow: none;
+        margin: 0;
+    }
 
 .conversation-header {
     background: linear-gradient(135deg, #6d8750, #4a5c2f);
@@ -499,7 +512,7 @@ textarea.control-input {
     }
 
     .conversation-container {
-        height: 400px;
+        height: 500px; /* Increased from 400px */
     }
 
     .chat-message {
@@ -514,6 +527,11 @@ textarea.control-input {
     .btn {
         width: 100%;
         flex: 1 !important;
+    }
+
+    .conversation-controls {
+        flex-direction: column;
+        gap: 5px;
     }
 }
 
@@ -544,3 +562,9 @@ textarea.control-input {
     .conversation-messages::-webkit-scrollbar-thumb:hover {
         background: #555;
     }
+
+/* Export dropdown overlay */
+#exportDropdown {
+    background: white;
+    border: 1px solid #ddd;
+}

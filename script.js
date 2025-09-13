@@ -156,7 +156,7 @@ let ai2UseCustom = false;
 let characterLimit = 1500;
 
 // DOM Elements (initialize after DOM loads)
-let chatMessages, startBtn, stopBtn, clearBtn, settingsBtn, addTurnBtn;
+let chatMessages, startBtn, stopBtn, clearBtn, settingsBtn, addTurnBtn, fullscreenBtn, exportBtn, exportDropdown;
 let ai1Status, ai1StatusText, ai2Status, ai2StatusText;
 let maxTurnsInput, topicInput, ai1NameInput, ai2NameInput;
 let ai1PersonaSelect, ai2PersonaSelect, charLimitInput;
@@ -207,6 +207,9 @@ function initializeDOMElements() {
     clearBtn = document.getElementById('clearBtn');
     settingsBtn = document.getElementById('settingsBtn');
     addTurnBtn = document.getElementById('addTurnBtn');
+    fullscreenBtn = document.getElementById('fullscreenBtn');
+    exportBtn = document.getElementById('exportBtn');
+    exportDropdown = document.getElementById('exportDropdown');
     ai1Status = document.getElementById('ai1Status');
     ai1StatusText = document.getElementById('ai1StatusText');
     ai2Status = document.getElementById('ai2Status');
@@ -308,7 +311,7 @@ function getPersonaName(isAI1) {
 function initConversation() {
     const ai1Name = ai1NameInput.value || "Person1";
     const ai2Name = ai2NameInput.value || "Person2";
-    const topic = topicInput.value || "the future of artificial intelligence";
+    const topic = topicInput.value || "artificial intelligence's future";
 
     conversationHistory = [
         {
@@ -343,7 +346,7 @@ function initConversation() {
             <div class="message-header">
                 <span class="message-icon">2</span>
                 ${ai2Name}
-                <span class="message-char-count">118 chars</span>
+                <span class="message-char-count">125 chars</span>
             </div>
             Greetings ${ai1Name}! I'm looking forward to our discussion. Shall we explore the topic of ${topic}?
         </div>
@@ -498,7 +501,7 @@ async function takeTurn() {
 
     const ai1Name = ai1NameInput.value || "Person1";
     const ai2Name = ai2NameInput.value || "Person2";
-    const topic = topicInput.value || "the future of artificial intelligence";
+    const topic = topicInput.value || "artificial intelligence's future";
 
     const sender = currentTurn % 2 === 0 ? 'ai1' : 'ai2';
 
@@ -575,6 +578,109 @@ function addOneTurn() {
     } else {
         takeTurn();
     }
+}
+
+// Fullscreen toggle
+function toggleFullscreen() {
+    const container = document.querySelector('.conversation-container');
+    if (!document.fullscreenElement) {
+        container.requestFullscreen().then(() => {
+            container.classList.add('fullscreen');
+            fullscreenBtn.innerHTML = '❌ Exit Fullscreen';
+        }).catch(err => {
+            showToast('Fullscreen not supported in this browser.');
+        });
+    } else {
+        document.exitFullscreen().then(() => {
+            container.classList.remove('fullscreen');
+            fullscreenBtn.innerHTML = '⛶ Fullscreen';
+        });
+    }
+}
+
+// Export functions
+function showExportDropdown() {
+    const container = document.querySelector('.conversation-container');
+    container.appendChild(exportDropdown); // ensure it's inside fullscreen
+    exportDropdown.style.display = 'block';
+}
+
+
+function closeExportDropdown() {
+    exportDropdown.style.display = 'none';
+}
+
+// Export functions
+function exportChat(format) {
+    const ai1Name = ai1NameInput.value || "Person1";
+    const ai2Name = ai2NameInput.value || "Person2";
+    const topic = topicInput.value || "artificial intelligence's future";
+    const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+
+    if (format === 'text') {
+        let textContent = '';
+        conversationHistory.slice(2).forEach(msg => {
+            const senderName = msg.sender === 'ai1' ? ai1Name : ai2Name;
+            textContent += `${senderName}: ${msg.content}\n`;
+        });
+        const blob = new Blob([textContent.trim()], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `dual-ai-chat-${timestamp}.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
+    } else if (format === 'json') {
+        const exportData = {
+            topic: topic,
+            ai1: ai1Name,
+            ai2: ai2Name,
+            messages: conversationHistory.slice(2).map((msg, index) => ({
+                id: index + 1,
+                sender: msg.sender === 'ai1' ? ai1Name : ai2Name,
+                message: msg.content
+            }))
+        };
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `dual-ai-chat-${timestamp}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    } else if (format === 'image') {
+        const chatElement = document.getElementById('chatMessages');
+        const originalHeight = chatElement.style.height; // save old height
+        const originalOverflow = chatElement.style.overflow;
+
+        // Expand to fit all content
+        chatElement.style.height = chatElement.scrollHeight + "px";
+        chatElement.style.overflow = "visible";
+
+        domtoimage.toPng(chatElement)
+            .then(function (dataUrl) {
+                const a = document.createElement('a');
+                const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+                a.href = dataUrl;
+                a.download = `dual-ai-chat-${timestamp}.png`;
+                a.click();
+
+                // Restore styles
+                chatElement.style.height = originalHeight;
+                chatElement.style.overflow = originalOverflow;
+            })
+            .catch(function (error) {
+                console.error('Export failed:', error);
+                // Restore styles if error happens
+                chatElement.style.height = originalHeight;
+                chatElement.style.overflow = originalOverflow;
+            });
+
+
+    }
+
+    closeExportDropdown();
+    showToast(`Chat exported as ${format.toUpperCase()}!`);
 }
 
 // Settings dialog
@@ -696,6 +802,17 @@ function setupEventListeners() {
     clearBtn.addEventListener('click', clearConversation);
     addTurnBtn.addEventListener('click', addOneTurn);
     settingsBtn.addEventListener('click', showSettings);
+    fullscreenBtn.addEventListener('click', toggleFullscreen);
+    exportBtn.addEventListener('click', showExportDropdown);
+
+    // Fullscreen change listener
+    document.addEventListener('fullscreenchange', () => {
+        const container = document.querySelector('.conversation-container');
+        if (!document.fullscreenElement) {
+            container.classList.remove('fullscreen');
+            fullscreenBtn.innerHTML = '⛶ Fullscreen';
+        }
+    });
 
     // Update personas when selection changes
     ai1PersonaSelect.addEventListener('change', (e) => {

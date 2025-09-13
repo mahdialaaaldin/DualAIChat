@@ -7,11 +7,13 @@
     <link rel="icon" href="assets/icon.png" type="image/png">
     <meta name="description" content="Watch two AI personalities engage in fascinating conversations on any topic with customizable personas.">
     <link rel="stylesheet" href="styles.css">
+    <!-- html2canvas for image export -->
+    <script src="https://cdn.jsdelivr.net/npm/dom-to-image-more@2.8.0/src/dom-to-image-more.min.js"></script>
+
 </head>
 <body>
     <div class="container">
         <div class="logo">Dual AI Chat</div>
-
         <div class="header">
             <h1>AI Conversation Simulator</h1>
             <p>Watch two advanced AI systems engage in a conversation on topics of your choosing. Customize their personalities and conversation topics below.</p>
@@ -22,16 +24,16 @@
                 <h2>AI 1: Person 1</h2>
                 <div class="control-group">
                     <label for="ai1-name">Display Name</label>
-                    <input type="text" class="control-input" id="ai1-name" value="Person1">
+                    <input type="text" id="ai1-name" class="control-input" placeholder="e.g., Alice" value="Person1">
                 </div>
                 <div class="control-group">
                     <label>Persona</label>
                     <div class="persona-toggle">
-                        <button class="toggle-btn active" id="ai1-preset-btn">Preset</button>
-                        <button class="toggle-btn" id="ai1-custom-btn">Custom</button>
+                        <button id="ai1-preset-btn" class="toggle-btn active">Preset</button>
+                        <button id="ai1-custom-btn" class="toggle-btn">Custom</button>
                     </div>
                     <div id="ai1-preset-container">
-                        <select class="control-input" id="ai1-persona">
+                        <select id="ai1-persona" class="control-input">
                             <option value="optimistic">Optimistic Tech Enthusiast</option>
                             <option value="skeptical">Skeptical Analyst</option>
                             <option value="creative">Creative Visionary</option>
@@ -39,7 +41,7 @@
                         </select>
                     </div>
                     <div id="ai1-custom-container" style="display: none;">
-                        <textarea class="control-input" id="ai1-custom-persona" placeholder="Describe the custom persona for AI 1..."></textarea>
+                        <textarea id="ai1-custom-persona" class="control-input" placeholder="Describe your custom persona..."></textarea>
                     </div>
                 </div>
             </div>
@@ -48,16 +50,16 @@
                 <h2>AI 2: Person 2</h2>
                 <div class="control-group">
                     <label for="ai2-name">Display Name</label>
-                    <input type="text" class="control-input" id="ai2-name" value="Person2">
+                    <input type="text" id="ai2-name" class="control-input" placeholder="e.g., Bob" value="Person2">
                 </div>
                 <div class="control-group">
                     <label>Persona</label>
                     <div class="persona-toggle">
-                        <button class="toggle-btn active" id="ai2-preset-btn">Preset</button>
-                        <button class="toggle-btn" id="ai2-custom-btn">Custom</button>
+                        <button id="ai2-preset-btn" class="toggle-btn active">Preset</button>
+                        <button id="ai2-custom-btn" class="toggle-btn">Custom</button>
                     </div>
                     <div id="ai2-preset-container">
-                        <select class="control-input" id="ai2-persona">
+                        <select id="ai2-persona" class="control-input">
                             <option value="philosophical">Philosophical Thinker</option>
                             <option value="practical">Practical Realist</option>
                             <option value="curious">Inquisitive Explorer</option>
@@ -65,7 +67,7 @@
                         </select>
                     </div>
                     <div id="ai2-custom-container" style="display: none;">
-                        <textarea class="control-input" id="ai2-custom-persona" placeholder="Describe the custom persona for AI 2..."></textarea>
+                        <textarea id="ai2-custom-persona" class="control-input" placeholder="Describe your custom persona..."></textarea>
                     </div>
                 </div>
             </div>
@@ -74,33 +76,26 @@
                 <h2>Conversation Settings</h2>
                 <div class="control-group">
                     <label for="topic">Conversation Topic</label>
-                    <input type="text" class="control-input" id="topic" value="The future of artificial intelligence">
+                    <input type="text" id="topic" class="control-input" placeholder="e.g., The future of artificial intelligence" value="artificial intelligence's future">
                 </div>
                 <div class="control-group">
                     <label for="max-turns">Max Conversation Turns</label>
-                    <input type="number" class="control-input" id="max-turns" min="2" max="20" value="10">
+                    <input type="number" id="max-turns" class="control-input" value="10" min="1" max="50">
                 </div>
                 <div class="control-group">
                     <label for="char-limit">Character Limit per Message</label>
-                    <input type="number" class="control-input" id="char-limit" min="500" max="3000" value="1500">
+                    <input type="number" id="char-limit" class="control-input" value="1500" min="100" max="4000">
                     <div class="char-limit-info">Recommended: 1500 characters to avoid cutoffs</div>
                 </div>
                 <div class="control-buttons">
                     <div class="btn-row">
-                        <button class="btn btn-primary" id="startBtn">
-                            <span>Start Conversation</span>
-                        </button>
-                        <button class="btn btn-stop" id="stopBtn">
-                            <span>Stop</span>
-                        </button>
-                        <button class="btn btn-clear" id="clearBtn">
-                            <span>Clear</span>
-                        </button>
+                        <button id="startBtn" class="btn btn-primary">Start Conversation</button>
+                        <button id="stopBtn" class="btn btn-stop" style="display: none;">Stop</button>
                     </div>
-                    <button class="btn btn-settings" id="settingsBtn">
-                        <span class="btn-icon">⚙️</span>
-                        <span>API Settings</span>
-                    </button>
+                    <div class="btn-row">
+                        <button id="clearBtn" class="btn btn-clear">Clear</button>
+                        <button id="settingsBtn" class="btn btn-settings">⚙️ API Settings</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -109,13 +104,12 @@
             <div class="conversation-header">
                 <div class="conversation-title">AI Conversation</div>
                 <div class="conversation-controls">
-                    <button class="btn btn-add-turn" id="addTurnBtn">
-                        <span class="btn-icon">➕</span>
-                        <span>Add Turn</span>
-                    </button>
+                    <button id="addTurnBtn" class="btn btn-add-turn">➕ Add Turn</button>
+                    <button id="fullscreenBtn" class="btn" style="padding: 8px 12px; font-size: 14px; background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%); color: white;">⛶ Fullscreen</button>
+                    <button id="exportBtn" class="btn" style="padding: 8px 12px; font-size: 14px; background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%); color: white;">📤 Export</button>
                 </div>
             </div>
-            <div class="conversation-messages" id="chatMessages">
+            <div id="chatMessages" class="conversation-messages">
                 <div class="chat-message ai1">
                     <div class="message-header">
                         <span class="message-icon">1</span>
@@ -134,15 +128,24 @@
                 </div>
             </div>
             <div class="status-bar">
-                <div class="status-indicator">
-                    <span class="status-dot inactive" id="ai1Status"></span>
+                <div id="ai1StatusContainer" class="status-indicator">
+                    <span id="ai1Status" class="status-dot inactive"></span>
                     <span id="ai1StatusText">Person1: Inactive</span>
                 </div>
-                <div class="status-indicator">
-                    <span class="status-dot inactive" id="ai2Status"></span>
+                <div id="ai2StatusContainer" class="status-indicator">
+                    <span id="ai2Status" class="status-dot inactive"></span>
                     <span id="ai2StatusText">Person2: Inactive</span>
                 </div>
             </div>
+        </div>
+
+        <!-- Export Dropdown (hidden by default) -->
+        <div id="exportDropdown" style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 15px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); display: none; z-index: 10001;">
+            <h3 style="margin-top: 0; color: #4a5c2f;">Export Conversation</h3>
+            <button onclick="exportChat('text')" style="display: block; width: 100%; padding: 10px; margin: 5px 0; background: #4a5c2f; color: white; border: none; border-radius: 8px; cursor: pointer;">Export as Text (.txt)</button>
+            <button onclick="exportChat('json')" style="display: block; width: 100%; padding: 10px; margin: 5px 0; background: #4a5c2f; color: white; border: none; border-radius: 8px; cursor: pointer;">Export as JSON (.json)</button>
+            <button onclick="exportChat('image')" style="display: block; width: 100%; padding: 10px; margin: 5px 0; background: #4a5c2f; color: white; border: none; border-radius: 8px; cursor: pointer;">Export as Image (.png)</button>
+            <button onclick="closeExportDropdown()" style="display: block; width: 100%; padding: 10px; margin: 10px 0 0 0; background: #ddd; color: #333; border: none; border-radius: 8px; cursor: pointer;">Cancel</button>
         </div>
     </div>
 
